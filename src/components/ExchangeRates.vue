@@ -5,23 +5,29 @@
             <table>
                 <thead>
                     <tr>
-                        <th colspan="3" style="text-align:center">當日匯率一覽</th>
+                        <th colspan="4" style="text-align:center">當日匯率一覽</th>
                     </tr>
                     <tr>
+                        <th>置頂</th>
                         <th>貨幣</th>
-                        <th>匯率</th>
+                        <th>台幣兌外幣</th>
+                        <th>外幣兌台幣</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(rate, code) in rates" :key="code">
-                        <td>{{ code }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ currencyMap[code] || '未知貨幣' }}</td>
+                    <tr v-for="(rate, code) in sortedRates" :key="code">
+                        <td><input type="checkbox" v-model="selectedCurrencies" :value="code"
+                                style="width: 30px; margin-bottom: 10px;"></td>
+                        <td>{{ code }}&nbsp;&nbsp;{{ currencyMap[code] || '未知貨幣' }}</td>
                         <td>{{ rate }}</td>
+                        <td>{{ computeInverseRate(rate) }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -34,6 +40,7 @@ export default {
     },
     data() {
         return {
+            selectedCurrencies: [],
             currencyMap: {
                 TWD: '新台幣',
                 AED: '阿聯酋迪拉姆',
@@ -198,18 +205,58 @@ export default {
                 ZMW: '贊比亞克瓦查',
                 ZWL: '辛巴威元'
             },
-            rates: {}  // 假設這是從 API 加載的匯率數據
+            rates: {}
         };
     },
-
+    watch: {
+        // 監控 selectedCurrencies 的變化
+        selectedCurrencies: {
+            handler() {
+                this.saveSelectedCurrencies(); // 保存到 localStorage
+            },
+            deep: true // 深度監控對象內部變化
+        }
+    },
+    computed: {
+        sortedRates() {
+            const selected = {};
+            const unselected = {};
+            Object.keys(this.rates).forEach(code => {
+                if (this.selectedCurrencies.includes(code)) {
+                    selected[code] = this.rates[code];
+                } else {
+                    unselected[code] = this.rates[code];
+                }
+            });
+            return { ...selected, ...unselected };
+        }
+    },
     created() {
         this.fetchRates();
+        this.loadSelectedCurrencies();
     },
-
+    beforeDestroy() {
+        this.saveSelectedCurrencies();
+    },
     methods: {
         async fetchRates() {
             const response = await axios.get('https://api.exchangerate-api.com/v4/latest/TWD');
             this.rates = response.data.rates;
+        },
+        loadSelectedCurrencies() {
+            const currencies = localStorage.getItem('selectedCurrencies');
+            if (currencies) {
+                this.selectedCurrencies = JSON.parse(currencies);
+            } else {
+                // 如果 localStorage 為空，則使用以下預設貨幣列表
+                this.selectedCurrencies = ['USD', 'EUR', 'JPY', 'GBP', 'CNY', 'HKD'];
+            }
+        },
+        saveSelectedCurrencies() {
+            localStorage.setItem('selectedCurrencies', JSON.stringify(this.selectedCurrencies));
+        },
+        computeInverseRate(rate) {
+            return rate > 0 ? (1 / rate).toFixed(2) : 'N/A';
         }
     }
 };
@@ -242,13 +289,27 @@ table {
 
 th,
 td {
-    padding: 12px 30px;
+    padding: 12px 50px;
     border-bottom: 1px solid #ccc;
     /* 給表格項目添加底線 */
     text-align: start;
 }
 
+@media (max-width: 600px) {
+
+    th,
+    td {
+        padding: 12px 10px;
+        /* 在手機上調整內邊距 */
+    }
+
+    table{
+        width: 90%;
+    }
+}
+
 th {
+
     background-color: #f4f4f4;
 }
 
