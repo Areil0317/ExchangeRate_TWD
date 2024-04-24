@@ -212,9 +212,9 @@ export default {
         // 監控 selectedCurrencies 的變化
         selectedCurrencies: {
             handler() {
-                this.saveSelectedCurrencies(); // 保存到 localStorage
+                this.saveSelectedCurrencies();
             },
-            deep: true // 深度監控對象內部變化
+            deep: true
         }
     },
     computed: {
@@ -248,7 +248,6 @@ export default {
             if (currencies) {
                 this.selectedCurrencies = JSON.parse(currencies);
             } else {
-                // 如果 localStorage 為空，則使用以下預設貨幣列表
                 this.selectedCurrencies = ['USD', 'EUR', 'JPY', 'GBP', 'CNY', 'HKD'];
             }
         },
@@ -270,28 +269,20 @@ export default {
 
 table {
     width: 60%;
-    /* 表格寬度為容器的 80% */
     margin: 20px 10px;
-    /* 添加上下邊距 */
     border-collapse: separate;
-    /* 讓 border-spacing 生效 */
     border-spacing: 0;
-    /* 移除格子之間的間隔 */
     border: 2px solid #333;
-    /* 添加外框 */
     border-radius: 8px;
-    /* 圓角邊框 */
     overflow: hidden;
-    /* 處理圓角和滾動的問題 */
     background-color: #fff;
-    /* 背景色 */
 }
 
 th,
 td {
     padding: 12px 50px;
     border-bottom: 1px solid #ccc;
-    /* 給表格項目添加底線 */
+
     text-align: start;
 }
 
@@ -300,10 +291,9 @@ td {
     th,
     td {
         padding: 12px 10px;
-        /* 在手機上調整內邊距 */
     }
 
-    table{
+    table {
         width: 90%;
     }
 }
@@ -315,11 +305,9 @@ th {
 
 tbody tr:last-child td {
     border-bottom: none;
-    /* 移除最後一行的底線 */
 }
 
 tbody tr:hover {
     background-color: #f9f9f9;
-    /* 滑過時變更背景色 */
 }
 </style>
